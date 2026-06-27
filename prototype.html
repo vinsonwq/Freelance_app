@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自由派 App 原型</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .phone-shell {
+    width: 390px;
+    min-height: 844px;
+    background: #fff;
+    border-radius: 40px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-bar {
+    height: 44px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+    flex-shrink: 0;
+  }
+  .status-bar .time { font-weight: 600; }
+  .status-bar .icons { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+
+  .page { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .page.active { display: flex; }
+
+  /* ===== TOP NAV ===== */
+  .top-nav {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 0.5px solid #e8eaed;
+    flex-shrink: 0;
+    background: #fff;
+  }
+  .top-nav .title { font-size: 18px; font-weight: 600; color: #1a1a1a; }
+  .top-nav .action-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #1677ff;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .top-nav .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+  }
+
+  /* ===== BOTTOM NAV ===== */
+  .bottom-nav {
+    height: 72px;
+    background: #fff;
+    border-top: 0.5px solid #e8eaed;
+    display: flex;
+    align-items: center;
+    padding-bottom: 8px;
+    flex-shrink: 0;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding-top: 8px;
+    border: none;
+    background: none;
+  }
+  .nav-item .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-item .nav-label { font-size: 11px; color: #999; }
+  .nav-item.active .nav-label { color: #1677ff; }
+  .nav-item.active .nav-icon { filter: none; }
+
+  /* ===== SCROLL CONTENT ===== */
+  .scroll-area { flex: 1; overflow-y: auto; padding: 0; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* ===== CALENDAR PAGE ===== */
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px 8px;
+  }
+  .cal-header .month-title { font-size: 17px; font-weight: 600; color: #1a1a1a; }
+  .cal-nav { display: flex; gap: 20px; align-items: center; }
+  .cal-nav button {
+    width: 44px; height: 44px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 22px;
+    color: #555;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: background 0.12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cal-nav button:hover { background: #f0f0f0; }
+  .cal-nav button:active { background: #e8e8e8; }
+  .cal-select {
+    border: 0.5px solid #e8eaed;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #fff;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    padding-right: 20px;
+    cursor: pointer;
+  }
+  .cal-select:focus { border-color: #1677ff; outline: none; }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 6px;
+    margin-bottom: 6px;
+  }
+  .cal-weekdays span {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    padding: 6px 0;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 4px;
+    gap: 5px;
+    margin-top: 12px;
+    margin-bottom: 32px;
+  }
+  .cal-cell {
+    min-height: 88px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 7px;
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.12s;
+  }
+  .cal-cell:hover { background: #f5f7ff; }
+  .cal-cell .day-num {
+    font-size: 16px;
+    font-weight: 400;
+    color: #1a1a1a;
+    line-height: 1;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+  }
+  .cal-cell.today .day-num {
+    background: #1677ff;
+    color: #fff;
+    font-weight: 600;
+  }
+  .cal-cell.other-month .day-num { color: #ccc; }
+  .cal-cell.has-event .day-num { font-weight: 500; }
+  .cal-cell .event-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #1677ff;
+    margin-top: 4px;
+  }
+  .cal-cell .event-label {
+    font-size: 11px;
+    color: #1677ff;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0 1px;
+    margin-top: 3px;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+  .cal-cell.weekend .day-num { color: #e84a3f; }
+  .cal-cell.weekend.today .day-num { color: #fff; }
+
+  /* upcoming list */
+  .section-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #999;
+    padding: 12px 20px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .project-card {
+    margin: 0 16px 10px;
+    border-radius: 14px;
+    border: 0.5px solid #e8eaed;
+    background: #fff;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  .project-card:hover { box-shadow: 0 2px 12px rgba(22,119,255,0.1); }
+  .project-card .pc-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .project-card .pc-name { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+  .project-card .pc-amount { font-size: 15px; font-weight: 600; color: #1677ff; }
+  .project-card .pc-meta {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .project-card .pc-tag {
+    font-size: 11px;
+    background: #f0f5ff;
+    color: #1677ff;
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .project-card .pc-tag.settled {
+    background: #f0faf5;
+    color: #17a96e;
+  }
+  .project-card .pc-tag.unsettled {
+    background: #fff8f0;
+    color: #e87c17;
+  }
+  .project-card .pc-dates { font-size: 12px; color: #999; }
+
+  /* ===== LIST PAGE ===== */
+  .filter-bar {
+    padding: 12px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-bottom: 0.5px solid #e8eaed;
+    padding-bottom: 12px;
+    background: #fff;
+  }
+  .time-tabs {
+    display: flex;
+    background: #f5f5f5;
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .time-tab {
+    flex: 1;
+    height: 32px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .time-tab.active {
+    background: #fff;
+    color: #1677ff;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .filter-row {
+    display: flex;
+    gap: 8px;
+  }
+  .filter-select {
+    flex: 1;
+    height: 32px;
+    border: 0.5px solid #e8eaed;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 12px;
+    color: #555;
+    background: #fff;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+
+  .list-item {
+    padding: 14px 16px;
+    border-bottom: 0.5px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .list-item:hover { background: #fafbff; }
+  .list-item .li-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .list-item .li-name { font-size: 15px; font-weight: 500; color: #1a1a1a; flex: 1; }
+  .list-item .li-amount { font-size: 15px; font-weight: 600; color: #1677ff; margin-left: 8px; }
+  .list-item .li-sub {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .list-item .li-dates { font-size: 12px; color: #999; flex: 1; }
+  .li-badge {
+    font-size: 11px;
+    border-radius: 4px;
+    padding: 2px 7px;
+    white-space: nowrap;
+  }
+  .li-badge.type { background: #f0f5ff; color: #1677ff; }
+  .li-badge.settled { background: #f0faf5; color: #17a96e; }
+  .li-badge.unsettled { background: #fff8f0; color: #e87c17; }
+
+  .list-summary {
+    padding: 12px 16px;
+    background: #f8faff;
+    display: flex;
+    gap: 0;
+    border-bottom: 0.5px solid #e8eaed;
+  }
+  .summary-item { flex: 1; text-align: center; }
+  .summary-item .sv { font-size: 16px; font-weight: 600; color: #1677ff; }
+  .summary-item .sk { font-size: 11px; color: #999; margin-top: 2px; }
+  .summary-divider { width: 0.5px; background: #e8eaed; }
+
+  /* ===== STATS PAGE ===== */
+  .stats-scroll { padding: 16px; }
+  .metric-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .metric-card {
+    background: #f8faff;
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .metric-card .mk { font-size: 12px; color: #999; margin-bottom: 4px; }
+  .metric-card .mv { font-size: 22px; font-weight: 600; color: #1677ff; }
+  .metric-card .mv.green { color: #17a96e; }
+  .metric-card .mv.small { font-size: 18px; }
+
+  .chart-card {
+    background: #fff;
+    border: 0.5px solid #e8eaed;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .chart-card .cc-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .chart-card .cc-title { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+  .chart-card .cc-action { font-size: 12px; color: #1677ff; cursor: pointer; }
+
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 100px;
+    padding-bottom: 20px;
+    position: relative;
+  }
+  .bar-chart::after {
+    content: '';
+    position: absolute;
+    bottom: 20px; left: 0; right: 0;
+    height: 0.5px;
+    background: #e8eaed;
+  }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .bar { width: 100%; border-radius: 3px 3px 0 0; background: #1677ff; min-height: 2px; transition: height 0.3s; }
+  .bar.light { background: #bcd5ff; }
+  .bar-label { font-size: 9px; color: #aaa; position: absolute; bottom: 2px; }
+  .bar-col { position: relative; }
+  .bar-month { position: absolute; bottom: 2px; font-size: 9px; color: #aaa; width: 100%; text-align: center; }
+
+  .pie-container { display: flex; gap: 16px; align-items: center; }
+  .pie-svg { flex-shrink: 0; }
+  .pie-legend { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { font-size: 12px; color: #555; flex: 1; }
+  .legend-pct { font-size: 12px; color: #999; }
+
+  .year-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .year-selector button {
+    width: 24px; height: 24px;
+    border: 0.5px solid #e8eaed;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    color: #555;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .year-selector span { font-size: 13px; font-weight: 500; color: #333; }
+
+  /* ===== SETTINGS PAGE ===== */
+  .settings-profile {
+    display: flex;
+    align-items: center;
+    padding: 20px 20px 16px;
+    border-bottom: 0.5px solid #e8eaed;
+    gap: 14px;
+  }
+  .avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1677ff, #69b1ff);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .profile-info .pname { font-size: 17px; font-weight: 600; color: #1a1a1a; }
+  .profile-info .pversion { font-size: 12px; color: #999; margin-top: 3px; }
+
+  .settings-section { padding: 12px 0 0; }
+  .settings-section-title {
+    font-size: 12px;
+    color: #999;
+    padding: 0 20px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .settings-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 0.5px solid #f5f5f5;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .settings-item:active { background: #f0f0f0; }
+  .settings-item .si-label { flex: 1; font-size: 15px; color: #1a1a1a; }
+  .settings-item .si-value { font-size: 13px; color: #999; margin-right: 6px; }
+  .settings-item .si-arrow { font-size: 13px; color: #ccc; }
+
+  .toggle {
+    width: 44px; height: 26px;
+    border-radius: 13px;
+    background: #e8eaed;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: #1677ff; }
+  .toggle::after {
+    content: '';
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 2px; left: 2px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* ===== CHECKBOX ===== */
+  .cb-box {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid #d9d9d9;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .cb-box.checked {
+    background: #1677ff;
+    border-color: #1677ff;
+  }
+  .cb-box .cb-tick {
+    display: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .cb-box.checked .cb-tick {
+    display: block;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: flex-end;
+    z-index: 100;
+    border-radius: 40px;
+    overflow: hidden;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-sheet {
+    width: 100%;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 0 0 32px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin: 12px auto 16px;
+  }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    padding: 0 20px 16px;
+    border-bottom: 0.5px solid #f0f0f0;
+  }
+  .form-group { padding: 14px 20px 0; }
+  .form-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .form-label .required { color: #e84a3f; }
+  .form-input {
+    width: 100%;
+    height: 44px;
+    border: 0.5px solid #e8eaed;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: #1a1a1a;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: #1677ff; }
+  .form-input:disabled {
+    background: #f8f8f8;
+    color: #bbb;
+    border-color: #f0f0f0;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .info-banner {
+    margin: 14px 20px 0;
+    background: #fff8ed;
+    border: 0.5px solid #ffe58f;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #d48806;
+  }
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 20px 20px 0;
+  }
+  .btn-cancel {
+    height: 48px;
+    border: 0.5px solid #e8eaed;
+    border-radius: 12px;
+    background: #fff;
+    color: #555;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .btn-save {
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    background: #1677ff;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-save:hover { background: #1264d3; }
+  .confirm-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    border-radius: 40px;
+    overflow: hidden;
+  }
+  .confirm-modal.show { display: flex; }
+  .confirm-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    width: 280px;
+    text-align: center;
+  }
+  .confirm-box .cb-title { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
+  .confirm-box .cb-desc { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.5; }
+  .confirm-actions { display: flex; gap: 10px; }
+  .btn-confirm-cancel {
+    flex: 1; height: 44px;
+    border: 0.5px solid #e8eaed;
+    border-radius: 10px;
+    background: #fff;
+    color: #555; font-size: 15px; cursor: pointer;
+  }
+  .btn-confirm-del {
+    flex: 1; height: 44px;
+    border: none;
+    border-radius: 10px;
+    background: #ff4d4f;
+    color: #fff; font-size: 15px; font-weight: 500; cursor: pointer;
+  }
+
+  /* toast */
+  .toast {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    font-size: 13px;
+    padding: 9px 18px;
+    border-radius: 20px;
+    white-space: nowrap;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="phone-shell" id="phone">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time">18:42</span>
+    <div class="icons">
+      <span>●●●●</span>
+      <span>WiFi</span>
+      <span>⚡100%</span>
+    </div>
+  </div>
+
+  <!-- ================== PAGE 1: 日程页 ================== -->
+  <div class="page active" id="page-schedule">
+    <div class="top-nav">
+      <span class="title">日程</span>
+      <button class="action-btn" onclick="openAddModal()">+</button>
+    </div>
+
+    <div class="scroll-area">
+      <div class="cal-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <select id="calYear" class="cal-select" onchange="renderCalendar()"></select>
+          <select id="calMonth" class="cal-select" onchange="renderCalendar()"></select>
+        </div>
+        <div class="cal-nav">
+          <button onclick="shiftMonth(-1)">‹</button>
+          <button onclick="shiftMonth(1)">›</button>
+        </div>
+      </div>
+
+      <div class="cal-weekdays">
+        <span style="color:#e84a3f">日</span>
+        <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span>
+        <span style="color:#e84a3f">六</span>
+      </div>
+
+      <div class="cal-grid" id="calGrid"></div>
+
+      <div style="height:24px"></div>
+    </div>
+  </div>
+
+  <!-- ================== PAGE 2: 列表页 ================== -->
+  <div class="page" id="page-list">
+    <div class="top-nav">
+      <span class="title">项目台账</span>
+      <button class="icon-btn">⚙</button>
+    </div>
+
+    <div class="filter-bar">
+      <div class="time-tabs">
+        <button class="time-tab active" onclick="switchTimeTab(this,'year')">年</button>
+        <button class="time-tab" onclick="switchTimeTab(this,'quarter')">季度</button>
+        <button class="time-tab" onclick="switchTimeTab(this,'month')">月份</button>
+      </div>
+      <div class="filter-row">
+        <select class="filter-select">
+          <option>全部客户</option>
+          <option>某品牌</option>
+          <option>电商甲方</option>
+          <option>创业公司</option>
+        </select>
+        <select class="filter-select">
+          <option>全部类型</option>
+          <option>品牌设计</option>
+          <option>摄影后期</option>
+          <option>前端开发</option>
+        </select>
+        <select class="filter-select">
+          <option>全部状态</option>
+          <option>已结清</option>
+          <option>未结清</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="list-summary">
+      <div class="summary-item">
+        <div class="sv">¥17,500</div>
+        <div class="sk">总金额</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <div class="sv">4</div>
+        <div class="sk">项目数</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <div class="sv" style="color:#17a96e">¥10,300</div>
+        <div class="sk">已收</div>
+      </div>
+    </div>
+
+    <div class="scroll-area">
+      <div class="list-item">
+        <div class="li-top">
+          <span class="li-name">某品牌 VI 设计</span>
+          <span class="li-amount">¥8,500</span>
+        </div>
+        <div class="li-sub">
+          <span class="li-dates">06-03, 06-05, 06-08</span>
+          <span class="li-badge type">品牌设计</span>
+          <span class="li-badge settled">已结清</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="li-top">
+          <span class="li-name">电商主图修图</span>
+          <span class="li-amount">¥2,200</span>
+        </div>
+        <div class="li-sub">
+          <span class="li-dates">06-10, 06-11</span>
+          <span class="li-badge type">摄影后期</span>
+          <span class="li-badge unsettled">待收款</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="li-top">
+          <span class="li-name">H5 活动页开发</span>
+          <span class="li-amount">¥5,000</span>
+        </div>
+        <div class="li-sub">
+          <span class="li-dates">06-15, 06-16, 06-17, 06-19</span>
+          <span class="li-badge type">前端开发</span>
+          <span class="li-badge unsettled">待收款</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="li-top">
+          <span class="li-name">Logo 设计</span>
+          <span class="li-amount">¥1,800</span>
+        </div>
+        <div class="li-sub">
+          <span class="li-dates">06-19</span>
+          <span class="li-badge type">品牌设计</span>
+          <span class="li-badge settled">已结清</span>
+        </div>
+      </div>
+      <div class="list-item" style="opacity:0.45">
+        <div class="li-top">
+          <span class="li-name">社交媒体视觉套图</span>
+          <span class="li-amount">¥3,200</span>
+        </div>
+        <div class="li-sub">
+          <span class="li-dates">05-20, 05-22</span>
+          <span class="li-badge type">品牌设计</span>
+          <span class="li-badge settled">已结清</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================== PAGE 3: 统计页 ================== -->
+  <div class="page" id="page-stats">
+    <div class="top-nav">
+      <span class="title">统计</span>
+      <button class="icon-btn" onclick="showToast('图表设置已打开')">⚙</button>
+    </div>
+    <div class="scroll-area stats-scroll">
+
+      <div class="metric-row">
+        <div class="metric-card">
+          <div class="mk">年度总收入</div>
+          <div class="mv">¥20,700</div>
+        </div>
+        <div class="metric-card">
+          <div class="mk">总项目数</div>
+          <div class="mv" style="color:#17a96e">5</div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-card">
+          <div class="mk">已收款</div>
+          <div class="mv small">¥10,300</div>
+        </div>
+        <div class="metric-card">
+          <div class="mk">待收款</div>
+          <div class="mv small" style="color:#e87c17">¥10,400</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="cc-header">
+          <span class="cc-title">月度收入</span>
+          <div class="year-selector">
+            <button>‹</button>
+            <span>2026</span>
+            <button>›</button>
+          </div>
+        </div>
+        <div class="bar-chart" id="barChart">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="cc-header">
+          <span class="cc-title">项目类型分布</span>
+          <span class="cc-action">按数量</span>
+        </div>
+        <div class="pie-container">
+          <svg class="pie-svg" width="100" height="100" viewBox="0 0 32 32" id="typePie">
+            <!-- rendered by JS -->
+          </svg>
+          <div class="pie-legend" id="typeLegend"></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="cc-header">
+          <span class="cc-title">客户金额占比</span>
+        </div>
+        <div class="pie-container">
+          <svg class="pie-svg" width="100" height="100" viewBox="0 0 32 32" id="clientPie">
+          </svg>
+          <div class="pie-legend" id="clientLegend"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================== PAGE 4: 设置页 ================== -->
+  <div class="page" id="page-settings">
+    <div class="top-nav">
+      <span class="title">我的</span>
+    </div>
+    <div class="scroll-area">
+
+      <div class="settings-profile">
+        <div class="avatar">🎨</div>
+        <div class="profile-info">
+          <div class="pname">自由职业者</div>
+          <div class="pversion">版本 1.0.0</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">字段显示设置</div>
+        <div class="settings-item" onclick="toggleSwitchRow(this)">
+          <span class="si-label">客户名称</span>
+          <div class="toggle on"></div>
+        </div>
+        <div class="settings-item" onclick="toggleSwitchRow(this)">
+          <span class="si-label">项目类型</span>
+          <div class="toggle on"></div>
+        </div>
+        <div class="settings-item" onclick="toggleSwitchRow(this)">
+          <span class="si-label">项目总额</span>
+          <div class="toggle on"></div>
+        </div>
+        <div class="settings-item" onclick="toggleSwitchRow(this)">
+          <span class="si-label">已收金额</span>
+          <div class="toggle on"></div>
+        </div>
+        <div class="settings-item" onclick="toggleSwitchRow(this)">
+          <span class="si-label">是否结清</span>
+          <div class="toggle on"></div>
+        </div>
+        <div class="settings-item" onclick="toggleSwitchRow(this)">
+          <span class="si-label">备注</span>
+          <div class="toggle"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">日历格子展示（最多选2个）</div>
+        <div class="settings-item" onclick="toggleCalCheck(this)">
+          <span class="si-label">项目名称</span>
+          <div class="cb-box checked"><span class="cb-tick">✓</span></div>
+        </div>
+        <div class="settings-item" onclick="toggleCalCheck(this)">
+          <span class="si-label">项目类型</span>
+          <div class="cb-box checked"><span class="cb-tick">✓</span></div>
+        </div>
+        <div class="settings-item" onclick="toggleCalCheck(this)">
+          <span class="si-label">客户名称</span>
+          <div class="cb-box"><span class="cb-tick">✓</span></div>
+        </div>
+        <div class="settings-item" onclick="toggleCalCheck(this)">
+          <span class="si-label">项目总额</span>
+          <div class="cb-box"><span class="cb-tick">✓</span></div>
+        </div>
+        <div class="settings-item" onclick="toggleCalCheck(this)">
+          <span class="si-label">是否结清</span>
+          <div class="cb-box"><span class="cb-tick">✓</span></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">账户</div>
+        <div class="settings-item">
+          <span class="si-label">修改昵称</span>
+          <span class="si-arrow">›</span>
+        </div>
+        <div class="settings-item">
+          <span class="si-label">修改头像</span>
+          <span class="si-arrow">›</span>
+        </div>
+        <div class="settings-item">
+          <span class="si-label">应用锁密码</span>
+          <span class="si-value">未开启</span>
+          <span class="si-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">数据</div>
+        <div class="settings-item" onclick="showToast('已生成 freelance_data_20260619.csv')">
+          <span class="si-label" style="color:#1677ff">导出数据（CSV）</span>
+          <span class="si-arrow">›</span>
+        </div>
+        <div class="settings-item">
+          <span class="si-label">建议与反馈</span>
+          <span class="si-arrow">›</span>
+        </div>
+      </div>
+
+      <div style="height:24px"></div>
+    </div>
+  </div>
+
+  <!-- ================== BOTTOM NAV ================== -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-schedule" onclick="switchPage('schedule')">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">日程</span>
+    </button>
+    <button class="nav-item" id="nav-list" onclick="switchPage('list')">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">列表</span>
+    </button>
+    <button class="nav-item" id="nav-stats" onclick="switchPage('stats')">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">统计</span>
+    </button>
+    <button class="nav-item" id="nav-settings" onclick="switchPage('settings')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">我的</span>
+    </button>
+  </div>
+
+  <!-- ================== ADD MODAL ================== -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">添加日程</div>
+
+      <div class="form-group">
+        <label class="form-label">项目名称 <span class="required">*</span></label>
+        <input type="text" class="form-input" id="inputProjectName" placeholder="输入或选择已有项目…" oninput="checkExisting(this.value)">
+      </div>
+
+      <div id="existingBanner" class="info-banner" style="display:none">
+        已关联已有项目，金额等信息保持不变
+      </div>
+
+      <div id="formFields">
+        <div class="form-group">
+          <label class="form-label">客户名称</label>
+          <input type="text" class="form-input" id="inputClient" placeholder="输入客户名称…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">项目类型</label>
+          <input type="text" class="form-input" id="inputType" placeholder="如：UI设计、摄影后期…">
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="padding:0">
+            <label class="form-label">项目总额</label>
+            <input type="number" class="form-input" id="inputTotal" placeholder="0.00">
+          </div>
+          <div class="form-group" style="padding:0">
+            <label class="form-label">已收金额</label>
+            <input type="number" class="form-input" id="inputReceived" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">备注</label>
+          <input type="text" class="form-input" id="inputRemark" placeholder="备注信息…">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-save" onclick="saveProject()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================== DELETE CONFIRM ================== -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-box">
+      <div class="cb-title">删除该项目？</div>
+      <div class="cb-desc">删除后，该项目的所有日期和信息将被一并移除，无法恢复。</div>
+      <div class="confirm-actions">
+        <button class="btn-confirm-cancel" onclick="closeConfirm()">取消</button>
+        <button class="btn-confirm-del" onclick="doDelete()">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+// ===== PAGE SWITCH =====
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+}
+
+// ===== TIME TAB =====
+function switchTimeTab(btn, type) {
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  showToast(type === 'year' ? '已切换到年视图' : type === 'quarter' ? '已切换到季度视图' : '已切换到月份视图');
+}
+
+// ===== TOGGLE SWITCH (整行点击) =====
+function toggleSwitchRow(item) {
+  const toggle = item.querySelector('.toggle');
+  if (!toggle) return;
+  toggle.classList.toggle('on');
+}
+
+// ===== CAL FIELD CHECKBOX (最多选2个) =====
+let calCheckedCount = 2;
+function toggleCalCheck(item) {
+  const cb = item.querySelector('.cb-box');
+  if (!cb) return;
+  if (cb.classList.contains('checked')) {
+    cb.classList.remove('checked');
+    calCheckedCount--;
+  } else {
+    if (calCheckedCount >= 2) {
+      showToast('最多只能选择 2 个字段');
+      return;
+    }
+    cb.classList.add('checked');
+    calCheckedCount++;
+  }
+}
+
+// ===== CALENDAR =====
+const calEvents = {3:'某品牌VI', 5:'某品牌VI', 8:'某品牌VI', 10:'电商修图', 11:'电商修图',
+    15:'H5开发', 16:'H5开发', 17:'H5开发', 19:'H5开发', 25:'社媒视觉'};
+
+function populateSelects() {
+  const yearSel = document.getElementById('calYear');
+  const monthSel = document.getElementById('calMonth');
+  for (let y = 2021; y <= 2099; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + '年';
+    if (y === 2026) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+  for (let m = 1; m <= 12; m++) {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m + '月';
+    if (m === 6) opt.selected = true;
+    monthSel.appendChild(opt);
+  }
+}
+
+function renderCalendar() {
+  const year = parseInt(document.getElementById('calYear').value);
+  const month = parseInt(document.getElementById('calMonth').value);
+  const grid = document.getElementById('calGrid');
+  const startDay = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
+  const todayDate = today.getDate();
+  let html = '';
+  const prevDays = new Date(year, month - 1, 0).getDate();
+  for (let i = 0; i < startDay; i++) {
+    const d = prevDays - startDay + 1 + i;
+    html += '<div class="cal-cell other-month"><div class="day-num">' + d + '</div></div>';
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = (startDay + d - 1) % 7;
+    const isWeekend = dow === 0 || dow === 6;
+    const isToday = isCurrentMonth && d === todayDate;
+    const ev = calEvents[d];
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+    if (isWeekend) cls += ' weekend';
+    if (ev) cls += ' has-event';
+    html += '<div class="' + cls + '" onclick="onDateClick(' + d + ')">' +
+      '<div class="day-num">' + d + '</div>' +
+      (ev ? '<div class="event-label">' + ev + '</div>' : '') +
+      '</div>';
+  }
+  const total = startDay + daysInMonth;
+  const rem = 7 - (total % 7 === 0 ? 7 : total % 7);
+  for (let i = 1; i <= rem; i++) {
+    html += '<div class="cal-cell other-month"><div class="day-num">' + i + '</div></div>';
+  }
+  grid.innerHTML = html;
+}
+
+function shiftMonth(delta) {
+  const yearSel = document.getElementById('calYear');
+  const monthSel = document.getElementById('calMonth');
+  let y = parseInt(yearSel.value);
+  let m = parseInt(monthSel.value);
+  m += delta;
+  if (m < 1) { m = 12; y--; }
+  if (m > 12) { m = 1; y++; }
+  if (y < 2021) { y = 2021; m = 1; }
+  if (y > 2099) { y = 2099; m = 12; }
+  yearSel.value = y;
+  monthSel.value = m;
+  renderCalendar();
+}
+
+populateSelects();
+renderCalendar();
+
+function onDateClick(d) {
+  document.getElementById('inputProjectName').value = '';
+  resetFormFields();
+  document.getElementById('addModal').classList.add('show');
+}
+
+// ===== MODAL =====
+function openAddModal() {
+  document.getElementById('inputProjectName').value = '';
+  resetFormFields();
+  document.getElementById('addModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('addModal').classList.remove('show');
+}
+
+function resetFormFields() {
+  const fields = ['inputClient','inputType','inputTotal','inputReceived','inputRemark'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = false;
+    el.value = '';
+  });
+  document.getElementById('existingBanner').style.display = 'none';
+}
+
+const existingProjects = ['某品牌 VI 设计', '电商主图修图', 'H5 活动页开发', 'Logo 设计'];
+function checkExisting(val) {
+  const match = existingProjects.find(p => p === val);
+  const banner = document.getElementById('existingBanner');
+  const fields = ['inputClient','inputType','inputTotal','inputReceived','inputRemark'];
+  if (match) {
+    banner.style.display = 'block';
+    fields.forEach(id => document.getElementById(id).disabled = true);
+  } else {
+    banner.style.display = 'none';
+    fields.forEach(id => document.getElementById(id).disabled = false);
+  }
+}
+
+function saveProject() {
+  const name = document.getElementById('inputProjectName').value.trim();
+  if (!name) { showToast('请输入项目名称'); return; }
+  const isExisting = existingProjects.includes(name);
+  closeModal();
+  showToast(isExisting ? '已追加日期到 ' + name : '项目已创建：' + name);
+}
+
+// ===== DELETE =====
+function showDeleteConfirm(e) {
+  e.preventDefault();
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('show');
+}
+function doDelete() {
+  closeConfirm();
+  showToast('项目已删除');
+}
+
+// ===== TOAST =====
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ===== BAR CHART =====
+(function renderBar() {
+  const data = [0, 0, 3200, 0, 8500, 9000, 0, 0, 0, 0, 0, 0];
+  const months = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+  const max = Math.max(...data) || 1;
+  const el = document.getElementById('barChart');
+  el.innerHTML = data.map((v, i) => {
+    const h = Math.round((v / max) * 72);
+    const cur = i === 5;
+    return `<div class="bar-col">
+      <div class="bar${cur ? '' : ' light'}" style="height:${h}px"></div>
+      <span class="bar-month">${months[i]}</span>
+    </div>`;
+  }).join('');
+})();
+
+// ===== PIE CHARTS =====
+function drawPie(svgId, legendId, segments) {
+  const svg = document.getElementById(svgId);
+  const legend = document.getElementById(legendId);
+  const cx = 16, cy = 16, r = 14;
+  let startAngle = -Math.PI / 2;
+  let paths = '';
+  segments.forEach(s => {
+    const angle = (s.pct / 100) * 2 * Math.PI;
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(startAngle + angle);
+    const y2 = cy + r * Math.sin(startAngle + angle);
+    const large = angle > Math.PI ? 1 : 0;
+    paths += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${s.color}"/>`;
+    startAngle += angle;
+  });
+  svg.innerHTML = paths;
+  legend.innerHTML = segments.map(s =>
+    `<div class="legend-item">
+      <div class="legend-dot" style="background:${s.color}"></div>
+      <span class="legend-name">${s.name}</span>
+      <span class="legend-pct">${s.pct}%</span>
+    </div>`
+  ).join('');
+}
+
+drawPie('typePie','typeLegend', [
+  {name:'品牌设计', pct:60, color:'#1677ff'},
+  {name:'摄影后期', pct:25, color:'#69b1ff'},
+  {name:'前端开发', pct:15, color:'#b7d8ff'},
+]);
+drawPie('clientPie','clientLegend', [
+  {name:'某品牌', pct:48, color:'#1677ff'},
+  {name:'电商甲方', pct:28, color:'#17a96e'},
+  {name:'创业公司', pct:24, color:'#e87c17'},
+]);
+</script>
+</body>
+</html>

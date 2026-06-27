@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>自由派 - 界面设计方案 V4</title>
+<style>
+  * { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  :root {
+    /* 主色调 - 优雅紫 */
+    --primary: #6C5CE7;
+    --primary-light: #A29BFE;
+    --primary-dark: #5A4BD1;
+    --primary-bg: #F8F7FF;
+    
+    /* 辅助色 */
+    --coral: #FF6B6B;
+    --teal: #00CEC9;
+    --warm: #FFEAA7;
+    
+    /* 中性色 */
+    --gray-50: #FAFAFA;
+    --gray-100: #F5F5F5;
+    --gray-200: #EEEEEE;
+    --gray-300: #E0E0E0;
+    --gray-400: #BDBDBD;
+    --gray-500: #9E9E9E;
+    --gray-600: #757575;
+    --gray-700: #616161;
+    --gray-800: #424242;
+    --gray-900: #212121;
+    
+    /* 阴影 */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    --shadow-xl: 0 12px 36px rgba(0,0,0,0.15);
+    
+    /* 圆角 */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+  }
+  
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    animation: bgShift 10s ease-in-out infinite alternate;
+  }
+  
+  @keyframes bgShift {
+    0% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    100% { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
+  }
+  
+  .phone-shell {
+    width: 390px;
+    height: 844px;
+    background: var(--gray-50);
+    border-radius: 44px;
+    box-shadow: var(--shadow-xl), 0 0 0 8px rgba(255,255,255,0.2);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    animation: phoneFloat 6s ease-in-out infinite;
+  }
+  
+  @keyframes phoneFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .status-bar {
+    height: 54px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 24px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    flex-shrink: 0;
+    border-bottom: 0.5px solid rgba(0,0,0,0.05);
+  }
+  
+  .status-bar .time { font-weight: 700; }
+  .status-bar .icons { 
+    display: flex; 
+    gap: 6px; 
+    align-items: center; 
+    font-size: 12px; 
+  }
+  
+  .page { 
+    display: none; 
+    flex: 1; 
+    flex-direction: column; 
+    overflow: hidden;
+    animation: pageEnter 0.3s ease-out;
+  }
+  
+  .page.active { 
+    display: flex; 
+  }
+  
+  @keyframes pageEnter {
+    from { 
+      opacity: 0; 
+      transform: translateY(10px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  /* ===== 顶部导航 ===== */
+  .top-nav {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 0.5px solid rgba(0,0,0,0.05);
+    flex-shrink: 0;
+  }
+  
+  .top-nav .title { 
+    font-size: 20px; 
+    font-weight: 700; 
+    color: var(--gray-900);
+    letter-spacing: -0.5px;
+  }
+  
+  .top-nav .action-btn {
+    width: 36px; 
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    border: none;
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    color: #fff;
+    font-size: 20px;
+    line-height: 1;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+    transition: all 0.2s ease;
+  }
+  
+  .top-nav .action-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+  }
+  
+  .top-nav .icon-btn {
+    width: 36px; 
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--gray-100);
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--gray-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  
+  .top-nav .icon-btn:active {
+    background: var(--gray-200);
+    transform: scale(0.92);
+  }
+  
+  /* ===== 底部导航 ===== */
+  .bottom-nav {
+    height: 84px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 0.5px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 16px 20px;
+    flex-shrink: 0;
+  }
+  
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 4px 4px;
+    border: none;
+    background: none;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  
+  .nav-item .nav-icon { 
+    font-size: 24px; 
+    line-height: 1;
+    transition: all 0.2s ease;
+  }
+  
+  .nav-item .nav-label { 
+    font-size: 10px; 
+    color: var(--gray-400);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .nav-item.active .nav-label { 
+    color: var(--primary);
+    font-weight: 600;
+  }
+  
+  .nav-item.active .nav-icon {
+    transform: translateY(-2px);
+  }
+  
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 20px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: transform 0.2s ease;
+  }
+  
+  .nav-item.active::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+  
+  /* ===== 滚动区域 ===== */
+  .scroll-area { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 16px 24px;
+    scroll-behavior: smooth;
+  }
+  
+  .scroll-area::-webkit-scrollbar { 
+    display: none; 
+  }
+  
+  /* ===== 日历页面 ===== */
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .cal-header .month-title { 
+    font-size: 28px; 
+    font-weight: 800; 
+    color: var(--gray-900);
+    letter-spacing: -1px;
+  }
+  
+  .cal-nav { 
+    display: flex; 
+    gap: 12px; 
+    align-items: center; 
+  }
+  
+  .cal-nav button {
+    width: 40px; 
+    height: 40px;
+    border: none;
+    background: white;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--gray-700);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+  }
+  
+  .cal-nav button:hover { 
+    background: white;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+  
+  .cal-nav button:active { 
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .cal-select {
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-800);
+    background: white;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+  }
+  
+  .cal-select:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .cal-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+  }
+  
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .weekday-label {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-400);
+    padding: 8px 0;
+  }
+  
+  .weekday-label.weekend {
+    color: var(--coral);
+  }
+  
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+  
+  .day-cell {
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    background: white;
+    border: 1.5px solid transparent;
+  }
+  
+  .day-cell:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .day-cell:active {
+    transform: translateY(0);
+  }
+  
+  .day-cell .day-num {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-800);
+    line-height: 1;
+  }
+  
+  .day-cell .day-projects {
+    font-size: 9px;
+    color: var(--primary);
+    font-weight: 600;
+    line-height: 1;
+  }
+  
+  .day-cell.today {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    box-shadow: 0 4px 16px rgba(108, 92, 231, 0.4);
+  }
+  
+  .day-cell.today .day-num {
+    color: white;
+  }
+  
+  .day-cell.today .day-projects {
+    color: rgba(255,255,255,0.9);
+  }
+  
+  .day-cell.weekend .day-num {
+    color: var(--coral);
+  }
+  
+  .day-cell.other-month {
+    opacity: 0.3;
+  }
+  
+  .day-cell.has-events {
+    border-color: var(--primary-bg);
+    background: linear-gradient(to bottom, white, var(--primary-bg));
+  }
+  
+  /* ===== 项目卡片 ===== */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .section-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 4px;
+  }
+  
+  .project-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    border: 1.5px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .project-card:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  
+  .project-card:active {
+    transform: translateY(0);
+  }
+  
+  .project-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  
+  .project-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.3;
+  }
+  
+  .project-card-amount {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+  
+  .project-card-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  
+  .meta-tag {
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .meta-tag.type {
+    background: var(--primary-bg);
+    color: var(--primary);
+  }
+  
+  .meta-tag.client {
+    background: #FFF3E0;
+    color: #E65100;
+  }
+  
+  .meta-tag.settled {
+    background: #E8F5E9;
+    color: #2E7D32;
+  }
+  
+  .meta-tag.unsettled {
+    background: #FFEBEE;
+    color: #C62828;
+  }
+  
+  .project-card-dates {
+    font-size: 13px;
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .project-card-dates::before {
+    content: '📅';
+    font-size: 14px;
+  }
+  
+  /* ===== 统计页面 ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .stat-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+  }
+  
+  .stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  
+  .stat-card .stat-label {
+    font-size: 13px;
+    color: var(--gray-500);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--gray-900);
+    line-height: 1;
+  }
+  
+  .stat-card .stat-value.income {
+    color: var(--teal);
+  }
+  
+  .stat-card .stat-value.expense {
+    color: var(--coral);
+  }
+  
+  .chart-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .chart-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .chart-placeholder {
+    height: 200px;
+    background: linear-gradient(to right, var(--primary-bg), white, var(--primary-bg));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-400);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  /* ===== 设置页面 ===== */
+  .settings-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: var(--radius-xl);
+    padding: 32px 24px;
+    margin-bottom: 24px;
+    color: white;
+    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3);
+  }
+  
+  .settings-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin-bottom: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  
+  .settings-nickname {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  
+  .settings-version {
+    font-size: 14px;
+    opacity: 0.8;
+    font-weight: 500;
+  }
+  
+  .settings-group {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .settings-item {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.5px solid var(--gray-100);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .settings-item:last-child {
+    border-bottom: none;
+  }
+  
+  .settings-item:hover {
+    background: var(--gray-50);
+  }
+  
+  .settings-item:active {
+    background: var(--gray-100);
+  }
+  
+  .settings-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .settings-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--primary-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  
+  .settings-item-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gray-800);
+  }
+  
+  .settings-item-right {
+    color: var(--gray-400);
+    font-size: 14px;
+  }
+  
+  .toggle-switch {
+    width: 52px;
+    height: 32px;
+    border-radius: 16px;
+    background: var(--gray-300);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .toggle-switch.active {
+    background: var(--primary);
+  }
+  
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+  }
+  
+  .toggle-switch.active::after {
+    left: 22px;
+  }
+  
+  /* ===== 弹窗 ===== */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .modal-overlay.active {
+    display: flex;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .modal-content {
+    background: white;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 24px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--gray-100);
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  
+  .modal-close:active {
+    background: var(--gray-200);
+    transform: scale(0.92);
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    color: var(--gray-900);
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+  }
+  
+  .form-input::placeholder {
+    color: var(--gray-400);
+  }
+  
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+  }
+  
+  .btn-primary:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+  }
+  
+  /* ===== 空状态 ===== */
+  .empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--gray-400);
+  }
+  
+  .empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+  
+  .empty-state-text {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  
+  /* ===== 标签 ===== */
+  .badge {
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .badge.primary {
+    background: var(--primary-bg);
+    color: var(--primary);
+  }
+  
+  .badge.success {
+    background: #E8F5E9;
+    color: #2E7D32;
+  }
+  
+  .badge.warning {
+    background: #FFF3E0;
+    color: #E65100;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-shell">
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <span class="icons">📶 100% 🔋</span>
+  </div>
+
+  <!-- 日程页 -->
+  <div class="page active" id="page-schedule">
+    <div class="top-nav">
+      <span class="title">📅 日程</span>
+      <button class="action-btn" onclick="openModal('add-modal')">+</button>
+    </div>
+    <div class="scroll-area">
+      <div class="cal-header">
+        <div>
+          <div class="month-title" id="current-month">2026年6月</div>
+        </div>
+        <div class="cal-nav">
+          <button onclick="changeMonth(-1)">‹</button>
+          <select class="cal-select" id="year-select" onchange="updateCalendar()">
+            <script>
+              for(let y=2021; y<=2099; y++) {
+                document.write(`<option ${y===2026?'selected':''}>${y}年</option>`);
+              }
+            </script>
+          </select>
+          <select class="cal-select" id="month-select" onchange="updateCalendar()">
+            <script>
+              for(let m=1; m<=12; m++) {
+                document.write(`<option ${m===6?'selected':''}>${m}月</option>`);
+              }
+            </script>
+          </select>
+          <button onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+
+      <div class="weekdays">
+        <div class="weekday-label">一</div>
+        <div class="weekday-label">二</div>
+        <div class="weekday-label">三</div>
+        <div class="weekday-label">四</div>
+        <div class="weekday-label">五</div>
+        <div class="weekday-label weekend">六</div>
+        <div class="weekday-label weekend">日</div>
+      </div>
+
+      <div class="calendar-grid" id="calendar-grid">
+        <!-- 日历格子由 JS 生成 -->
+      </div>
+
+      <div class="section-title">近期项目</div>
+      <div id="project-list">
+        <div class="project-card" onclick="showToast('打开项目详情')">
+          <div class="project-card-header">
+            <div class="project-card-name">某大厂APP项目</div>
+            <div class="project-card-amount">¥35,000</div>
+          </div>
+          <div class="project-card-meta">
+            <span class="meta-tag type">外包开发</span>
+            <span class="meta-tag client">某大厂</span>
+            <span class="meta-tag settled">已结清</span>
+          </div>
+          <div class="project-card-dates">6月3日, 6月5日, 6月10日</div>
+        </div>
+
+        <div class="project-card" onclick="showToast('打开项目详情')">
+          <div class="project-card-header">
+            <div class="project-card-name">创业公司官网</div>
+            <div class="project-card-amount">¥8,000</div>
+          </div>
+          <div class="project-card-meta">
+            <span class="meta-tag type">网站建设</span>
+            <span class="meta-tag client">ABC初创</span>
+            <span class="meta-tag unsettled">未结清</span>
+          </div>
+          <div class="project-card-dates">6月12日, 6月15日</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 列表页 -->
+  <div class="page" id="page-list">
+    <div class="top-nav">
+      <span class="title">📋 台账</span>
+      <button class="icon-btn" onclick="showToast('筛选功能')">🔍</button>
+    </div>
+    <div class="scroll-area">
+      <div style="display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;">
+        <div class="badge primary" style="cursor:pointer;">全部</div>
+        <div class="badge" style="background:var(--gray-100);color:var(--gray-600);cursor:pointer;">今年</div>
+        <div class="badge" style="background:var(--gray-100);color:var(--gray-600);cursor:pointer;">本月</div>
+        <div class="badge" style="background:var(--gray-100);color:var(--gray-600);cursor:pointer;">本季</div>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:20px;">
+        <div class="stat-card">
+          <div class="stat-label">总金额</div>
+          <div class="stat-value">¥43,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">项目数</div>
+          <div class="stat-value">2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已收款</div>
+          <div class="stat-value income">¥35,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">待收款</div>
+          <div class="stat-value expense">¥8,000</div>
+        </div>
+      </div>
+
+      <div class="section-title">项目列表</div>
+      <div class="project-card">
+        <div class="project-card-header">
+          <div class="project-card-name">某大厂APP项目</div>
+          <div class="project-card-amount">¥35,000</div>
+        </div>
+        <div class="project-card-meta">
+          <span class="meta-tag type">外包开发</span>
+          <span class="meta-tag client">某大厂</span>
+          <span class="meta-tag settled">已结清</span>
+        </div>
+        <div class="project-card-dates">6月3日, 6月5日, 6月10日</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-header">
+          <div class="project-card-name">创业公司官网</div>
+          <div class="project-card-amount">¥8,000</div>
+        </div>
+        <div class="project-card-meta">
+          <span class="meta-tag type">网站建设</span>
+          <span class="meta-tag client">ABC初创</span>
+          <span class="meta-tag unsettled">未结清</span>
+        </div>
+        <div class="project-card-dates">6月12日, 6月15日</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 统计页 -->
+  <div class="page" id="page-stats">
+    <div class="top-nav">
+      <span class="title">📊 统计</span>
+      <button class="icon-btn" onclick="showToast('切换年份')">📅</button>
+    </div>
+    <div class="scroll-area">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">年度收入</div>
+          <div class="stat-value income">¥43,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">项目数</div>
+          <div class="stat-value">2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已收款</div>
+          <div class="stat-value income">¥35,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">待收款</div>
+          <div class="stat-value expense">¥8,000</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">月度收入趋势</div>
+        <div class="chart-placeholder">📊 柱状图区域</div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">项目类型分布</div>
+        <div class="chart-placeholder">🥧 饼图区域</div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">客户金额占比</div>
+        <div class="chart-placeholder">🥧 饼图区域</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置页 -->
+  <div class="page" id="page-settings">
+    <div class="top-nav">
+      <span class="title">👤 我的</span>
+    </div>
+    <div class="scroll-area">
+      <div class="settings-header">
+        <div class="settings-avatar">😊</div>
+        <div class="settings-nickname">自由设计师</div>
+        <div class="settings-version">自由派 v1.0.0</div>
+      </div>
+
+      <div class="section-title">显示设置</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">📝</div>
+            <span class="settings-item-label">显示客户名称</span>
+          </div>
+          <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">🏷️</div>
+            <span class="settings-item-label">显示项目类型</span>
+          </div>
+          <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">💰</div>
+            <span class="settings-item-label">显示金额</span>
+          </div>
+          <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+        </div>
+      </div>
+
+      <div class="section-title">日历展示字段（最多2个）</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">📝</div>
+            <span class="settings-item-label">客户名称</span>
+          </div>
+          <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary);" />
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">🏷️</div>
+            <span class="settings-item-label">项目类型</span>
+          </div>
+          <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary);" />
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">💰</div>
+            <span class="settings-item-label">金额</span>
+          </div>
+          <input type="checkbox" style="width:20px;height:20px;accent-color:var(--primary);" />
+        </div>
+      </div>
+
+      <div class="section-title">账户设置</div>
+      <div class="settings-group">
+        <div class="settings-item" onclick="showToast('修改昵称')">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">✏️</div>
+            <span class="settings-item-label">修改昵称</span>
+          </div>
+          <div class="settings-item-right">›</div>
+        </div>
+        <div class="settings-item" onclick="showToast('修改头像')">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">🖼️</div>
+            <span class="settings-item-label">修改头像</span>
+          </div>
+          <div class="settings-item-right">›</div>
+        </div>
+        <div class="settings-item" onclick="showToast('应用锁')">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">🔒</div>
+            <span class="settings-item-label">应用锁</span>
+          </div>
+          <div class="settings-item-right">›</div>
+        </div>
+      </div>
+
+      <div class="section-title">数据管理</div>
+      <div class="settings-group">
+        <div class="settings-item" onclick="showToast('导出CSV')">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">📤</div>
+            <span class="settings-item-label">导出数据（CSV）</span>
+          </div>
+          <div class="settings-item-right">›</div>
+        </div>
+        <div class="settings-item" onclick="showToast('建议反馈')">
+          <div class="settings-item-left">
+            <div class="settings-item-icon">💬</div>
+            <span class="settings-item-label">建议与反馈</span>
+          </div>
+          <div class="settings-item-right">›</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:24px;color:var(--gray-400);font-size:13px;">
+        自由派 v1.0.0 · 让自由职业更轻松
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('schedule', this)">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">日程</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('list', this)">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">台账</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('stats', this)">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">统计</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('settings', this)">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">我的</span>
+    </button>
+  </div>
+</div>
+
+<!-- 添加项目弹窗 -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="modal-title">新建项目</span>
+      <button class="modal-close" onclick="closeModal('add-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">项目名称 *</label>
+      <input type="text" class="form-input" placeholder="输入项目名称" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">客户名称</label>
+      <input type="text" class="form-input" placeholder="输入客户名称" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">项目类型</label>
+      <input type="text" class="form-input" placeholder="如：外包开发、网站建设" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">总金额（元）</label>
+      <input type="number" class="form-input" placeholder="输入金额" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">已收款（元）</label>
+      <input type="number" class="form-input" placeholder="输入已收款金额" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">日期</label>
+      <input type="date" class="form-input" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">备注</label>
+      <textarea class="form-input" rows="3" placeholder="添加备注（可选）" style="resize:none;"></textarea>
+    </div>
+    <button class="btn-primary" onclick="showToast('项目创建成功！'); closeModal('add-modal');">创建项目</button>
+  </div>
+</div>
+
+<!-- Toast 提示 -->
+<div id="toast" style="position:fixed;top:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;z-index:2000;display:none;backdrop-filter:blur(10px);">
+</div>
+
+<script>
+  // 页面切换
+  function switchPage(page, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    btn.classList.add('active');
+    
+    if (page === 'schedule') updateCalendar();
+  }
+
+  // 日历功能
+  let currentDate = new Date(2026, 5, 1); // 2026年6月
+
+  function changeMonth(delta) {
+    currentDate.setMonth(currentDate.getMonth() + delta);
+    updateCalendar();
+  }
+
+  function updateCalendar() {
+    const yearSelect = document.getElementById('year-select');
+    const monthSelect = document.getElementById('month-select');
+    const year = parseInt(yearSelect.value);
+    const month = parseInt(monthSelect.value);
+    currentDate = new Date(year, month - 1, 1);
+    
+    const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    document.getElementById('current-month').textContent = `${year}年${monthNames[month-1]}`;
+    
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const startWeekday = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+    
+    // 填充空格
+    for (let i = 0; i < startWeekday; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'day-cell other-month';
+      grid.appendChild(cell);
+    }
+    
+    // 填充日期
+    const today = new Date();
+    const projects = {
+      3: ['某大厂APP'],
+      5: ['某大厂APP'],
+      10: ['某大厂APP'],
+      12: ['创业公司官网'],
+      15: ['创业公司官网'],
+      20: ['新项目'],
+    };
+    
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      const isToday = currentDate.getFullYear() === today.getFullYear() && 
+                       currentDate.getMonth() === today.getMonth() && 
+                       d === today.getDate();
+      const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), d).getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      
+      if (isToday) cell.classList.add('today');
+      if (isWeekend) cell.classList.add('weekend');
+      if (projects[d]) cell.classList.add('has-events');
+      
+      cell.innerHTML = `
+        <span class="day-num">${d}</span>
+        ${projects[d] ? `<span class="day-projects">${projects[d].length}个项目</span>` : ''}
+      `;
+      
+      cell.onclick = () => openModal('add-modal');
+      grid.appendChild(cell);
+    }
+  }
+
+  // 弹窗功能
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  // Toast 提示
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+  }
+
+  // 点击弹窗外部关闭
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('active');
+      }
+    });
+  });
+
+  // 初始化日历
+  updateCalendar();
+</script>
+
+</body>
+</html>
