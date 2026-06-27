@@ -1,7 +1,7 @@
 name: freelance_app
 description: 自由派 - 自由职业者日程与财务管家
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.2+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
